@@ -1,24 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from sqlalchemy.orm import Session
 
 from app.container import user_service, auth_service
 from app.database import get_session
 from app.dto.user import UserLoginDTO
-
+from app.limiter import limiter
 
 router = APIRouter()
 
 
 @router.post("/", summary="Авторизация пользователя",
-             description=" - Принимает username и password существующего пользователя, \n - Возвращает токен доступа на 30 минут")
-
-async def login(data: UserLoginDTO, session: Session = Depends(get_session)):
-    # form_data: OAuth2PasswordRequestForm = Depends()
+             description=" - Принимает username и password существующего пользователя, \n"
+                         " - Возвращает токен доступа на 30 минут")
+@limiter.limit("5/minute")
+async def login(request: Request,
+                data: UserLoginDTO,
+                session: Session = Depends(get_session)):
 
     # Получаем объект пользователя из базы данных
     user = user_service.get_user(data.username, session)
-
     if not user:
         raise HTTPException(404, detail="Пользователь не найден")
 

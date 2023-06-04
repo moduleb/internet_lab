@@ -14,7 +14,7 @@ router = APIRouter()
 @router.post("/", summary="Регистрация пользователя",
              description=" - Принимает username и password нового пользователя \n"
                          " - Возвращает токен доступа на 30 минут")
-@limiter.limit("2/minute")
+@limiter.limit("5/minute")
 async def register(request: Request,
                    data: UserDTO,
                    session: Session = Depends(get_session)):
