@@ -20,7 +20,7 @@ router = APIRouter()
                          " - Требует наличия токена в заголовке запроса в поле 'Authorization'")
 @limiter.limit("5/minute")
 async def create(request: Request,
-                 data: TaskDTO = None,
+                 data: TaskDTO,
                  current_username: str = Depends(auth_service.verify_token),
                  session: Session = Depends(get_session)):
     return task_service.create(data, session)
@@ -59,7 +59,7 @@ async def get_one(request: Request,
 @limiter.limit("5/minute")
 async def update(request: Request,
                  task_id: int,
-                 data: TaskDTO = Body(...),
+                 data: TaskDTO,
                  current_username: str = Depends(auth_service.verify_token),
                  session: Session = Depends(get_session)):
     return task_service.update(task_id, data, session)

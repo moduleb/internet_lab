@@ -14,7 +14,7 @@ class AuthenticationService:
 
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-    def create_access_token(self, username: str) -> bytes:
+    def create_access_token(self, username: str) -> str:
         """
         Генерирует токен доступа
         :param username:
@@ -86,7 +86,7 @@ class AuthenticationService:
             raise HTTPException(status_code=401, detail="Недействительная подпись токена")
 
         except jwt.DecodeError:
-            logger.error(f'Ошибка декодирования токена: {e}')
+            logger.error(f'Ошибка декодирования токена:')
             raise HTTPException(status_code=401, detail="Ошибка декодирования токена")
 
         return data

@@ -43,7 +43,6 @@ class TaskService:
         Обновляем данные task
         """
 
-        print(task_id)
         # Получаем task из базы данных
         task = self.get_one(task_id, session)
 
