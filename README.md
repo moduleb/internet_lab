@@ -48,7 +48,7 @@
 
 <br> Информация об эндпоинтах также доступна в Swagger по адресу <b>/docs</b>
 
-### /register <b>[ POST ]</b>
+### /register <font color = gray, size = 3>[post]</font>
 
 Принимает JSON с данными нового пользователя:
 ```
@@ -66,7 +66,7 @@
 }
 ```
 
-### /login <b>[ POST ]</b>:
+### /login [post]:
 
 Принимает JSON с данными уже зарегистрированного пользователя:
 ```
@@ -76,7 +76,7 @@
 }
 ```
 
-### /logout <b>[ POST ]</b>:
+### /logout [post]:
 Ожидает токен доступа в заголовке ‘Authorization’
 Помечает токен недействительным, дальнейшая авторизация с ним невозможна.
 
@@ -86,7 +86,7 @@
 ```
 Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0cmlmbmciLCJleHAiOjE2ODU2OTAxNzd9.bn_523efN3TdqgU1gAZzVn-RHkEMxGL3NpcHH0YTHM4
 ```
-### /tasks <b>[ GET ]</b>
+### /tasks [get]
 Возвращает JSON с информацией обо всех задачах.
 ```
 [
@@ -105,7 +105,7 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0cmlmbmciLCJleHAi
 ]
 ```
 
-### /tasks/{task_id} <b>[ GET ]</b>
+### /tasks/{task_id} [get]
 Возвращает JSON с информацией о задаче с полученным id.
 ```
 {
@@ -117,7 +117,7 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0cmlmbmciLCJleHAi
 ```
 
 
-### /tasks/{task_id} <b>[ POST ]</b>
+### /tasks/{task_id} [post]
 Создает новую задачу. Ожидает JSON с данными:
 ```
 {
@@ -126,7 +126,7 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0cmlmbmciLCJleHAi
 }
 ```
 
-### /tasks/{task_id} <b>[ PUT ]</b>
+### /tasks/{task_id} [put]
 Обновляет информацию о задаче с полученным id.
 <br>Ожидает JSON с данными:
 ```
@@ -136,7 +136,7 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0cmlmbmciLCJleHAi
 }
 ```
 
-### /tasks/{task_id} <b>[ DELETE ]</b>
+### /tasks/{task_id} [delete]
 Удаляет задачу с полученным id.
 
 ## База данных доступна вне приложения. Параметры подключения:
