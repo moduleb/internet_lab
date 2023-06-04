@@ -28,9 +28,9 @@
 2. Переходим в эту папку:
 <br>`cd vacancy`
 3. Скачиваем файл <b> 'docker-compose.yml'</b>: 
-<br>`wget -O docker-compose.yaml https://raw.githubusercontent.com/ModuleB/vacancy/master/docker-compose.yaml`
+<br>`wget -O docker-compose.yaml https://raw.githubusercontent.com/ModuleB/gooddelo/master/docker-compose.yaml`
 4. Скачиваем файл <b> 'Dockerfile'</b>: 
-<br>`wget -O Dockerfile https://raw.githubusercontent.com/ModuleB/vacancy/master/Dockerfile`
+<br>`wget -O Dockerfile https://raw.githubusercontent.com/ModuleB/gooddelo/master/Dockerfile`
 5. Скачиваем docker образы:
 <br>`docker compose pull`
 6. Запустить контейнер:
