@@ -6,6 +6,12 @@ from environs import Env
 env = Env()
 env.read_env()
 
+# Настройки Redis
+@dataclass
+class RedisConfig:
+    HOST: str = 'localhost'
+    PORT: int = 6379
+
 # Настройки логгера
 @dataclass
 class LoggerConfig:
@@ -30,7 +36,8 @@ class PasswordHashConfig:
 # Настройки генерации токена
 @dataclass
 class TokenConfig:
-    EXPIRATION_TIME_MINUTES: int = 30
+    # Время жизни токена
+    EXPIRATION_TIME_MINUTES: int = 999999999
     SECRET: str = env.str("JWT_SECRET")
     ALGORITHM: str = env.str("JWT_ALGORITHM")
 
@@ -52,7 +59,7 @@ class BaseConfig:
     password: PasswordHashConfig = field(default_factory=PasswordHashConfig)
     token: TokenConfig = field(default_factory=TokenConfig)
     database: DatabaseConfig = field(default_factory=DatabaseConfig)
-
+    redis: RedisConfig = field(default_factory=RedisConfig)
 
 # Настройки конфигурации для продакшена
 @dataclass
@@ -64,6 +71,8 @@ class ProdConfig(BaseConfig):
         name="gooddelo"))
     logger: LoggerConfig = field(default_factory=lambda: LoggerConfig(
         LEVEL="ERROR"))
+    redis: RedisConfig = field(default_factory=lambda: RedisConfig(
+        HOST="redis"))
 
 
 # Используем конфигурацию production если передана соответствующая переменная

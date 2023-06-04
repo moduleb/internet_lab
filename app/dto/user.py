@@ -1,11 +1,9 @@
-from datetime import date
-from decimal import Decimal
-
-from fastapi import Depends
 from pydantic import BaseModel, validator
 
-from app.container import user_service
-from app.database import get_session
+
+class UserLoginDTO(BaseModel):
+    username: str
+    password: str
 
 
 class ShowUser(BaseModel):
@@ -30,7 +28,6 @@ class UserDTO(BaseModel):
         if len(v) < 3 or len(v) > 16:
             raise ValueError('Username должно содержать от 3 до 16 символов')
         return v
-
 
     @validator('password')
     def validate_password(cls, v):

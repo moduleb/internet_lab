@@ -21,19 +21,17 @@ class UserService:
         # Создаем новый объект User
         new_user = User(**data.dict())
 
-        # Заменяем пароль на хеш
+        # Записываем хещ пароля
         new_user.password = self.hash_password(data.password)
 
         # Сохраняем пользователя и возвращаем объект User
         return self.dao.create_user(new_user, session)
 
-    def get_user(self, username, session):
+    def get_user(self, username: str, session: Session) -> User:
         """
         Получаем объект User по username
         """
-        user = self.dao.get_user(username, session)
-
-        return user
+        return self.dao.get_user(username, session)
 
     @staticmethod
     def hash_password(password: str) -> str:
@@ -48,8 +46,7 @@ class UserService:
                 config.password.ITERATIONS
             )
             return base64.b64encode(hash_digest).decode('utf-8')
+
         except Exception as e:
             logger.error(f'Ошибка функции хеширования пароля: {e}')
             raise HTTPException(500, detail="Ошибка функции хеширования пароля")
-
-

@@ -2,29 +2,39 @@ version: "3.9"
 
 services:
   app:
-    container_name: vacancy_app
+    container_name: gooddelo_app
     build:
       context: .
-    image: goodwin954/vacancy_test
+    image: goodwin954/gooddelo
     ports:
       - "8000:8000"
     depends_on:
       pg:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+  redis:
+    container_name: gooddelo_redis
+    image: redis:latest
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   pg:
-    container_name: vacancy_pg
+    container_name: gooddelo_pg
     image: postgres:latest
     environment:
-      POSTGRES_USER: vacancy
-      POSTGRES_PASSWORD: vacancy
-      POSTGRES_DB: vacancy
+      POSTGRES_USER: gooddelo
+      POSTGRES_PASSWORD: gooddelo
+      POSTGRES_DB: gooddelo
       PGPORT: 5432
     ports:
       - "5435:5432"
     volumes:
       - ./pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U vacancy" ]
+      test: [ "CMD-SHELL", "pg_isready -U gooddelo" ]
       interval: 5s
       timeout: 5s
       retries: 5

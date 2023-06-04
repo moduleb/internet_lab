@@ -63,6 +63,11 @@ class TaskDAO:
             session.add(task)
             session.commit()
 
+        except IntegrityError as e:
+            # Если уже существует
+            if 'already exists' in str(e):
+                raise HTTPException(500, detail="Task c таким 'name' уже существует")
+
         except Exception as e:
             logger.error(f"[TaskDAO] Ошибка базы данных: {e}")
             raise HTTPException(500, detail="Ошибка базы данных")

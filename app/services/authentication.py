@@ -1,41 +1,95 @@
-
 from datetime import timedelta, datetime
 import jwt
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from app.config import config
+from app.dao.redis import RedisDAO
 from app.logger import logger
 
 
 class AuthenticationService:
+    def __init__(self, redis_dao: RedisDAO):
+        self.redis = redis_dao
+
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-    @staticmethod
-    def create_access_token(username: str) -> bytes:
+    def create_access_token(self, username: str) -> bytes:
+        """
+        Генерирует токен доступа
+        :param username:
+        :return: token
+        """
         data = {"username": username}
+
+        # Устанавливаем время жизни токена и записываем в data
         expire = datetime.utcnow() + timedelta(minutes=config.token.EXPIRATION_TIME_MINUTES)
         data_to_encode = {**data, **{"exp": expire}}
 
-        # return access_token
-        return jwt.encode(data_to_encode, config.token.SECRET, algorithm=config.token.ALGORITHM)
+        # Генерируем токен
+        token = jwt.encode(data_to_encode, config.token.SECRET, algorithm=config.token.ALGORITHM)
 
+        # Сохраняем в список токенов пользователя в Redis
+        self.redis.add_token(username, token)
+
+        # Возвращаем токен
+        return token
+
+    def verify_token(self, token: str = Depends(oauth2_scheme)) -> str:
+        """
+        Декодирует токен и проверяет его наличие
+        в списке активных токенов пользователя в Redis
+        :param token:
+        :return: username
+        """
+        data = self._decode_token(token)
+        username = data.get("username")
+
+        if username is None:
+            raise HTTPException(status_code=401, detail="Неверные данные для аутентификации")
+
+        # Проверяем наличие токена в списке токенов пользователя в Redis
+        if not self.redis.check_token(username, token):
+            raise HTTPException(status_code=401, detail="Токен недействителен")
+
+        return username
+
+    def logout(self, token: str = Depends(oauth2_scheme)) -> str:
+        """
+        Декодирует токен и удаляет его из списка активных токенов пользователя в Redis
+        :param token:
+        :return: username
+        """
+        data = self._decode_token(token)
+
+        username = data.get("username")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Неверные данные для аутентификации")
+
+        # Удаляем токен из списка токенов в Redis
+        self.redis.delete_token(username, token)
+
+        # Возвращаем username
+        return username
 
     @staticmethod
-    def verify_token(token: str = Depends(oauth2_scheme)) -> str:
+    def _decode_token(token: str) -> dict:
+        """
+        Декодирует токен (извлекает data)
+        :param token:
+        :return: data
+        """
         try:
             data = jwt.decode(token, config.token.SECRET, algorithms=[config.token.ALGORITHM])
-            username = data.get("username")
-            if username is None:
-                raise HTTPException(status_code=401, detail="Неверные данные для аутентификации")
-            return username
 
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Срок действия токена истек")
+
         except jwt.InvalidSignatureError:
             raise HTTPException(status_code=401, detail="Недействительная подпись токена")
-        except Exception as e:
-            logger.error(f'Ошибка токена: {e}')
-            raise HTTPException(status_code=401, detail="Ошибка токена")
 
+        except jwt.DecodeError:
+            logger.error(f'Ошибка декодирования токена: {e}')
+            raise HTTPException(status_code=401, detail="Ошибка декодирования токена")
 
+        return data
