@@ -29,9 +29,6 @@ class AuthenticationService:
         # Генерируем токен
         token = jwt.encode(data_to_encode, config.token.SECRET, algorithm=config.token.ALGORITHM)
 
-        # Сохраняем в список токенов пользователя в Redis
-        self.redis.add_token(username, token)
-
         # Возвращаем токен
         return token
 
@@ -48,8 +45,8 @@ class AuthenticationService:
         if username is None:
             raise HTTPException(status_code=401, detail="Неверные данные для аутентификации")
 
-        # Проверяем наличие токена в списке токенов пользователя в Redis
-        if not self.redis.check_token(username, token):
+        # Проверяем наличие токена в списке неактивных токенов пользователя в Redis
+        if self.redis.check_token(username, token):
             raise HTTPException(status_code=401, detail="Токен недействителен")
 
         return username
@@ -66,8 +63,8 @@ class AuthenticationService:
         if username is None:
             raise HTTPException(status_code=401, detail="Неверные данные для аутентификации")
 
-        # Удаляем токен из списка токенов в Redis
-        self.redis.delete_token(username, token)
+        # Сохраняем в список неактивных токенов пользователя в Redis
+        self.redis.add_token(username, token)
 
         # Возвращаем username
         return username
