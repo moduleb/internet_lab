@@ -35,7 +35,7 @@ class AuthenticationService:
     def verify_token(self, token: str = Depends(oauth2_scheme)) -> str:
         """
         Декодирует токен и проверяет его наличие
-        в списке активных токенов пользователя в Redis
+        в списке неактивных токенов пользователя в Redis
         :param token:
         :return: username
         """
@@ -53,7 +53,7 @@ class AuthenticationService:
 
     def logout(self, token: str = Depends(oauth2_scheme)) -> str:
         """
-        Декодирует токен и удаляет его из списка активных токенов пользователя в Redis
+        Декодирует токен и добавляет его в список неактивных токенов пользователя в Redis
         :param token:
         :return: username
         """
