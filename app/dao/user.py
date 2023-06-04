@@ -1,48 +1,55 @@
-
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from app.logger import logger
 from app.models.user import User
 
+# Тексты ошибок
+read_err = "Ошибка получения информации из базы данных"
+create_err = "Ошибка сохранения информации в базу данных"
+update_err = "Ошибка обновления информации в базе данных"
+delete_err = "Ошибка удаления информации из базы данных"
+duplicate_err = "Ошибка сохранения в базу данных: запись уже существует"
+
 
 class UserDAO:
-    def create_user(self, new_user, session):
+    """
+    Класс для работы с объектами User
+    """
+    @staticmethod
+    def create_user(new_user: User, session: Session) -> User:
         """
         Добавляет нового пользователя в базу данных.
-
-        :param new_user: Объект с данными нового пользователя
-        :param session: Объект сессии SQLAlchemy для выполнения операций в базе данных
-        :return: Созданный пользователь
         """
         try:
             # Добавление нового пользователя и сохранение изменений в базе данных
             session.add(new_user)
             session.commit()
+
         except IntegrityError as e:
             # Если произошла ошибка целостности (дублирование)
             if 'already exists' in str(e):
-                raise HTTPException(500, detail="Пользователь уже существует")
+                raise HTTPException(500, detail=duplicate_err)
+
         except Exception as e:
             # Если произошла какая-либо другая ошибка
-            logger.error(f"[UserDAO] Ошибка подключения к базе данных: {e}")
-            raise HTTPException(500, detail="Ошибка базы данных")
+            logger.error(f"{create_err}: {e}")
+            raise HTTPException(500, detail=create_err)
+
         else:
             # Если ошибок не возникло, возвращаем созданного пользователя
             return new_user
 
-
-    def get_user(self, username, session):
+    @staticmethod
+    def get_user(username: str, session: Session) -> User:
         """
         Извлекает пользователя с заданным именем пользователя из базы данных.
-
-        :param username: Имя пользователя для поиска в базе данных
-        :param session: Объект сессии SQLAlchemy для выполнения операций в базе данных
-        :return: Найденный пользователь или None, если пользователь не найден
         """
         try:
             # Выполнение запроса к базе данных для поиска пользователя с заданным именем пользователя
             return session.query(User).filter(User.username == username).first()
+
         except Exception as e:
-            logger.error(f"[UserDAO] Ошибка подключения к базе данных: {e}")
-            raise HTTPException(500, detail="Ошибка базы данных")
+            logger.error(f"{read_err}: {e}")
+            raise HTTPException(500, detail=read_err)

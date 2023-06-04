@@ -17,8 +17,6 @@ class AuthenticationService:
     def create_access_token(self, username: str) -> str:
         """
         Генерирует токен доступа
-        :param username:
-        :return: token
         """
         data = {"username": username}
 
@@ -36,8 +34,6 @@ class AuthenticationService:
         """
         Декодирует токен и проверяет его наличие
         в списке неактивных токенов пользователя в Redis
-        :param token:
-        :return: username
         """
         data = self._decode_token(token)
         username = data.get("username")
@@ -54,8 +50,6 @@ class AuthenticationService:
     def logout(self, token: str = Depends(oauth2_scheme)) -> str:
         """
         Декодирует токен и добавляет его в список неактивных токенов пользователя в Redis
-        :param token:
-        :return: username
         """
         data = self._decode_token(token)
 
@@ -73,8 +67,6 @@ class AuthenticationService:
     def _decode_token(token: str) -> dict:
         """
         Декодирует токен (извлекает data)
-        :param token:
-        :return: data
         """
         try:
             data = jwt.decode(token, config.token.SECRET, algorithms=[config.token.ALGORITHM])

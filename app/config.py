@@ -61,6 +61,7 @@ class BaseConfig:
     database: DatabaseConfig = field(default_factory=DatabaseConfig)
     redis: RedisConfig = field(default_factory=RedisConfig)
 
+
 # Настройки конфигурации для продакшена
 @dataclass
 class ProdConfig(BaseConfig):

@@ -25,11 +25,14 @@ Base = declarative_base()
 
 
 def get_session():
+    # Создаем объект сессии
     session = SessionClass()
     try:
+        # Используем ключевое слово yield, чтобы вернуть сессию в качестве генератора
         yield session
     except OperationalError as e:
         pass
         logger.error(f"[database.py] Ошибка подключения к базе данных: {e}")
     finally:
+        # Закрываем сессию
         session.close()

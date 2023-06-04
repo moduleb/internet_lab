@@ -7,9 +7,20 @@ from sqlalchemy.orm import Session
 from app.logger import logger
 from app.models.task import Task
 
+# Тексты ошибок
+read_err = "Ошибка получения информации из базы данных"
+create_err = "Ошибка сохранения информации в базу данных"
+update_err = "Ошибка обновления информации в базе данных"
+delete_err = "Ошибка удаления информации из базы данных"
+duplicate_err = "Ошибка сохранения в базу данных: запись уже существует"
+
 
 class TaskDAO:
-    def create(self, new_task: Task, session: Session) -> Task:
+    """
+    Класс для работы с объектами Task
+    """
+    @staticmethod
+    def create(new_task: Task, session: Session) -> Task:
         """
         Добавляет новый task в базу данных.
         """
@@ -21,18 +32,19 @@ class TaskDAO:
         except IntegrityError as e:
             # Если уже существует
             if 'already exists' in str(e):
-                raise HTTPException(500, detail="Task уже существует")
+                raise HTTPException(500, detail=duplicate_err)
 
         except Exception as e:
             # Если произошла какая-либо другая ошибка
-            logger.error(f"[TaskDAO] Ошибка базы данных: {e}")
-            raise HTTPException(500, detail="Ошибка базы данных")
+            logger.error(f"{create_err}: {e}")
+            raise HTTPException(500, detail=create_err)
 
         else:
             # Если ошибок не возникло, возвращаем созданный task
             return new_task
 
-    def get_one(self, task_id: int, session: Session) -> Task:
+    @staticmethod
+    def get_one(task_id: int, session: Session) -> Task:
         """
         Извлекает task с заданным id из базы данных.
         """
@@ -40,10 +52,11 @@ class TaskDAO:
             return session.query(Task).filter(Task.id == task_id).first()
 
         except Exception as e:
-            logger.error(f"[TaskDAO] Ошибка базы данных: {e}")
-            raise HTTPException(500, detail="Ошибка базы данных")
+            logger.error(f"{read_err}: {e}")
+            raise HTTPException(500, detail=read_err)
 
-    def get_all(self, session: Session) -> list[Type[Task]]:
+    @staticmethod
+    def get_all(session: Session) -> list[Type[Task]]:
         """
         Извлекает все объекты task из базы данных.
         """
@@ -51,12 +64,13 @@ class TaskDAO:
             return session.query(Task).all()
 
         except Exception as e:
-            logger.error(f"[TaskDAO] Ошибка базы данных: {e}")
-            raise HTTPException(500, detail="Ошибка базы данных")
+            logger.error(f"{read_err}: {e}")
+            raise HTTPException(500, detail=read_err)
 
-    def update(self, task: Task, session: Session) -> Task:
+    @staticmethod
+    def update(task: Task, session: Session) -> Task:
         """
-        Добавляет новый task в базу данных.
+        Обновляет task в базе данных.
         """
         try:
             # Обновление task и сохранение изменений в базе данных
@@ -66,17 +80,18 @@ class TaskDAO:
         except IntegrityError as e:
             # Если уже существует
             if 'already exists' in str(e):
-                raise HTTPException(500, detail="Task c таким 'name' уже существует")
+                raise HTTPException(500, detail=duplicate_err)
 
         except Exception as e:
-            logger.error(f"[TaskDAO] Ошибка базы данных: {e}")
-            raise HTTPException(500, detail="Ошибка базы данных")
+            logger.error(f"{update_err}: {e}")
+            raise HTTPException(500, detail=update_err)
 
         else:
             # Если ошибок не возникло, возвращаем обновленный task
             return task
 
-    def delete(self, task: Task, session: Session):
+    @staticmethod
+    def delete(task: Task, session: Session):
         """
         Удаляет task из базы данных.
         """
@@ -85,5 +100,5 @@ class TaskDAO:
             session.commit()
 
         except Exception as e:
-            logger.error(f"[TaskDAO] Ошибка базы данных: {e}")
-            raise HTTPException(500, detail="Ошибка базы данных")
+            logger.error(f"{delete_err}: {e}")
+            raise HTTPException(500, detail=delete_err)

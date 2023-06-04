@@ -1,10 +1,11 @@
 import decimal
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
-from typing import List
 
 from pydantic import BaseModel, validator
 
+
+# Модель вывода Task
 class ShowTask(BaseModel):
     id: int
     name: str
@@ -16,14 +17,7 @@ class ShowTask(BaseModel):
         orm_mode = True
 
 
-class ShowTasks(BaseModel):
-    item: List[ShowTask]
-
-    # Включение сериализации моделей SQLAlchemy
-    class Config:
-        orm_mode = True
-
-
+# Модель вывода Task
 class TaskDTO(BaseModel):
     name: str
     price: Decimal
@@ -31,15 +25,12 @@ class TaskDTO(BaseModel):
     @validator('name')
     def validate_username(cls, name):
 
-        # сет разрешенных символов
+        # Cет разрешенных символов
         allowed_symbols = set("абвгдеёжзийклмнопрстуфхцчшщъыьэюя-_ abcdefghijklmnopqrstuvwxyz0123456789")
 
         # Проверка на пустое значение
         if name is None:
             raise ValueError('Name не может быть пустым')
-
-        # Приведем к str, на случай, если получили только число
-        # name = str(name)
 
         # Проверка на длину
         if len(name) < 1 or len(name) > 50:
@@ -61,7 +52,7 @@ class TaskDTO(BaseModel):
         # Проверка, что price - число
         try:
             price = decimal.Decimal(price)
-        except Exception:
+        except decimal.InvalidOperation:
             raise ValueError('Price должен быть числом')
 
         # Проверка на максимальное значение

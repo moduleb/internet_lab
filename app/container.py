@@ -1,9 +1,10 @@
-from app.dao.redis import RedisDAO
 from app.dao.task import TaskDAO
 from app.dao.user import UserDAO
-from app.services.authentication import AuthenticationService
+from app.dao.redis import RedisDAO
 from app.services.task import TaskService
 from app.services.user import UserService
+from app.services.authentication import AuthenticationService
+
 
 user_dao = UserDAO()
 user_service = UserService(user_dao)

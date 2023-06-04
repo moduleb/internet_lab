@@ -1,5 +1,5 @@
-import datetime
-from typing import List, Type
+
+from typing import Type
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -15,7 +15,7 @@ class TaskService:
 
     def create(self, data: TaskDTO, session: Session) -> Task:
         """
-        Создает нового task и сохраняет его в базу данных.
+        Создает новый объект task и сохраняет его в базу данных.
         """
         # Создаем новый объект Task
         new_task = Task(**data.dict())
@@ -25,13 +25,13 @@ class TaskService:
 
     def get_all(self, session: Session) -> list[Type[Task]]:
         """
-        Получаем все объекты task
+        Получаем все объекты task из базы данных
         """
         return self.dao.get_all(session)
 
     def get_one(self, task_id: int, session: Session) -> Task:
         """
-        Получаем объект Task по id
+        Получаем объект Task по id из базы данных
         """
         task = self.dao.get_one(task_id, session)
         if not task:
@@ -40,7 +40,7 @@ class TaskService:
 
     def update(self, task_id: int, data: TaskDTO, session: Session) -> Task:
         """
-        Обновляем данные task
+        Обновляем объект task в базе данных
         """
 
         # Получаем task из базы данных
@@ -57,7 +57,9 @@ class TaskService:
         return self.dao.update(task, session)
 
     def delete(self, task_id: int, session: Session) -> None:
-
+        """
+        Удаляет объект task из базы данных
+        """
         task = self.get_one(task_id, session)
 
         self.dao.delete(task, session)

@@ -1,20 +1,20 @@
 from pydantic import BaseModel, validator
 
-
+# Модель валидации объекта User при входе в систему
 class UserLoginDTO(BaseModel):
     username: str
     password: str
 
-
+# Модель валидации объекта User при отправке пользователю
 class ShowUser(BaseModel):
     id: int
     username: str
 
-    # Для сериализации моделей SQLAlchemy
+    # Включение сериализации моделей SQLAlchemy
     class Config:
         orm_mode = True
 
-
+# Модель валидации объекта User при регистрации
 class UserDTO(BaseModel):
     username: str
     password: str
@@ -22,12 +22,15 @@ class UserDTO(BaseModel):
     @validator('username')
     def validate_username(cls, v):
         allowed_symbols = set("abcdefghijklmnopqrstuvwxyz-_1234567890")
+
         # True, если все элементы из v есть в allowed_symbols
         if not set(v.lower()).issubset(allowed_symbols):
             raise ValueError('Username содержит недопустимые символы')
+
         if len(v) < 3 or len(v) > 16:
             raise ValueError('Username должно содержать от 3 до 16 символов')
         return v
+
 
     @validator('password')
     def validate_password(cls, v):
