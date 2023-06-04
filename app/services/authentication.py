@@ -41,7 +41,7 @@ class AuthenticationService:
         if username is None:
             raise HTTPException(status_code=401, detail="Неверные данные для аутентификации")
 
-        # Проверяем наличие токена в списке неактивных токенов пользователя в Redis
+        # Проверяем наличие токена в списке деактивированных
         if self.redis.check_token(username, token):
             raise HTTPException(status_code=401, detail="Токен недействителен")
 
@@ -57,7 +57,11 @@ class AuthenticationService:
         if username is None:
             raise HTTPException(status_code=401, detail="Неверные данные для аутентификации")
 
-        # Сохраняем в список неактивных токенов пользователя в Redis
+        # Проверяем наличие токена в списке деактивированных
+        if self.redis.check_token(username, token):
+            raise HTTPException(status_code=401)
+
+        # Сохраняем в токен список деактивированных
         self.redis.add_token(username, token)
 
         # Возвращаем username

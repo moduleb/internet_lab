@@ -19,6 +19,7 @@ class TaskDAO:
     """
     Класс для работы с объектами Task
     """
+
     @staticmethod
     def create(new_task: Task, session: Session) -> Task:
         """
@@ -28,10 +29,12 @@ class TaskDAO:
             # Создание нового task и сохранение изменений в базе данных
             session.add(new_task)
             session.commit()
+            logger.debug(f"Сохранено в db: {new_task}")
 
         except IntegrityError as e:
             # Если уже существует
             if 'already exists' in str(e):
+                logger.debug(f"Already exists: {new_task}")
                 raise HTTPException(500, detail=duplicate_err)
 
         except Exception as e:
@@ -49,7 +52,9 @@ class TaskDAO:
         Извлекает task с заданным id из базы данных.
         """
         try:
-            return session.query(Task).filter(Task.id == task_id).first()
+            task = session.query(Task).filter(Task.id == task_id).first()
+            logger.debug(f"Получено из db: {task}")
+            return task
 
         except Exception as e:
             logger.error(f"{read_err}: {e}")
@@ -61,7 +66,10 @@ class TaskDAO:
         Извлекает все объекты task из базы данных.
         """
         try:
-            return session.query(Task).all()
+            tasks = session.query(Task).all()
+            logger.debug(f"Получено из db: {tasks}")
+            return tasks
+
 
         except Exception as e:
             logger.error(f"{read_err}: {e}")
@@ -76,10 +84,12 @@ class TaskDAO:
             # Обновление task и сохранение изменений в базе данных
             session.add(task)
             session.commit()
+            logger.debug(f"Сохранено в db: {task}")
 
         except IntegrityError as e:
             # Если уже существует
             if 'already exists' in str(e):
+                logger.debug(f"Already exists: {task}")
                 raise HTTPException(500, detail=duplicate_err)
 
         except Exception as e:
@@ -98,6 +108,7 @@ class TaskDAO:
         try:
             session.delete(task)
             session.commit()
+            logger.debug(f"Удалено из db: {task}")
 
         except Exception as e:
             logger.error(f"{delete_err}: {e}")

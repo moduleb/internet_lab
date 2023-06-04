@@ -6,9 +6,7 @@ from app.database import get_session
 from app.dto.user import UserDTO
 from app.limiter import limiter
 
-
 router = APIRouter()
-
 
 
 @router.post("/", summary="Регистрация пользователя",

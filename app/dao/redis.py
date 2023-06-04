@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from fastapi import HTTPException
@@ -16,7 +17,8 @@ class RedisDAO:
     def add_token(username: str, token: str) -> None:
         # Добавление токена в список деактивированных токенов пользователя
         try:
-            r.rpush(username, token)
+            result = r.rpush(username, token)
+            logger.debug(f"Добавление токена в список деактивированных: {result}")
         except Exception as e:
             logger.error(f"{REDIS_ERROR_MSG} {e}")
             raise HTTPException(status_code=500, detail=REDIS_ERROR_MSG)
@@ -26,16 +28,10 @@ class RedisDAO:
         # Проверка наличия токена в списке деактивированных токенов пользователя
         try:
             tokens: List[bytes] = r.lrange(username, 0, -1)
-            return token.encode('utf-8') in tokens
+            result = token.encode('utf-8') in tokens
+            logger.debug(f"Проверка наличия токена в списке деактивированных: {result}")
+            return result
         except Exception as e:
             logger.error(f"{REDIS_ERROR_MSG} {e}")
             raise HTTPException(status_code=500, detail=REDIS_ERROR_MSG)
 
-    @staticmethod
-    def delete_token(username: str, token: str) -> None:
-        # Удаление токена из списка деактивированных токенов пользователя
-        try:
-            r.lrem(username, 0, token)
-        except Exception as e:
-            logger.error(f"{REDIS_ERROR_MSG} {e}")
-            raise HTTPException(status_code=500, detail=REDIS_ERROR_MSG)

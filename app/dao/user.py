@@ -26,10 +26,12 @@ class UserDAO:
             # Добавление нового пользователя и сохранение изменений в базе данных
             session.add(new_user)
             session.commit()
+            logger.debug(f"Сохранено в db: {new_user}")
 
         except IntegrityError as e:
             # Если произошла ошибка целостности (дублирование)
             if 'already exists' in str(e):
+                logger.debug(f"Already exists: {new_user}")
                 raise HTTPException(500, detail=duplicate_err)
 
         except Exception as e:
@@ -48,7 +50,9 @@ class UserDAO:
         """
         try:
             # Выполнение запроса к базе данных для поиска пользователя с заданным именем пользователя
-            return session.query(User).filter(User.username == username).first()
+            user = session.query(User).filter(User.username == username).first()
+            logger.debug(f"Получено из db: {user}")
+            return user
 
         except Exception as e:
             logger.error(f"{read_err}: {e}")
