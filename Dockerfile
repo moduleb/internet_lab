@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 # Копируем файлы poetry в контейнер
 WORKDIR /app
-COPY requirements.txt ./
+COPY requirements.txt .
 
 # Устанавливаем  зависимости
 RUN pip install -r requirements.txt
