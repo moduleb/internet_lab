@@ -14,8 +14,8 @@ router = APIRouter()
 
 # GET ONE
 @router.get("/", summary="Получение информации о пользователе",
-            description=" - Возвращает username, email пользователя \n"
-                        " - Требует get параметра с id пользователя")
+            description=" - Требует токен в заголовке Authorization \n"
+                        " - Возвращает информацию о текущем пользователе: username, email, registration date")
 async def get_one(cursor=Depends(get_cursor),
                   username=Depends(AuthService.verify_token)) -> Response:
     data = await UserService.get_one_by_username(cursor, username)
@@ -24,9 +24,9 @@ async def get_one(cursor=Depends(get_cursor),
 
 # UPDATE
 @router.put("/",
-            summary="Update User",
-            description=" - Возвращает username, email пользователя \n"
-                        " - Требует get параметра с id пользователя")
+            summary="Обновление данных пользователя",
+            description=" - Требует токен в заголовке Authorization \n"
+                        " - Возвращает обновленную информацию о текущем пользователе: username и email")
 async def update(data: UserUpdateDTO,
                  cursor: Cursor = Depends(get_cursor),
                  username=Depends(AuthService.verify_token)) -> Response:
@@ -39,9 +39,9 @@ async def update(data: UserUpdateDTO,
 
 # DELETE
 @router.delete("/", status_code=204,
-               summary="Delete User",
-               description=" - Возвращает username, email пользователя \n"
-                           " - Требует get параметра с id пользователя")
+               summary="Удаление пользователя",
+               description=" - Требует токен в заголовке Authorization \n"
+                           " - Удаляет пользователя из базы данных")
 async def delete(cursor=Depends(get_cursor),
                  username=Depends(AuthService.verify_token)):
     await UserService.delete(cursor, username)

@@ -12,9 +12,9 @@ router = APIRouter()
 
 # REGISTER
 @router.post("/register",
-             summary="Create User",
-             description=" - Возвращает username, email пользователя \n"
-                         " - Требует get параметра с id пользователя")
+             summary="Регистрация пользователя",
+             description=" - Создает пользователя в базе данных \n"
+                         " - Возвращает токен доступа")
 async def create(request: UserRegDTO, cursor = Depends(get_cursor)) -> Response:
 
     request.password = AuthService.hash_pass(request.password)

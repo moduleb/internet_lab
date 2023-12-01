@@ -12,8 +12,9 @@ from app.services.user_service import UserService
 router = APIRouter()
 
 
-@router.post("/login", summary="Авторизация пользователя",
-             description=" - Принимает username и password существующего пользователя, \n"
+@router.post("/login",
+             summary="Аутентификация пользователя",
+             description=" - Требует username и password существующего пользователя, \n"
                          " - Возвращает токен доступа")
 
 async def login(request: UserLoginDTO,
