@@ -28,7 +28,7 @@ def _decode_token(token: str) -> dict:
 class AuthService:
 
     @staticmethod
-    def hash_pass(password: str) -> str:
+    async def hash_pass(password: str) -> str:
         """
         Хеширует пароль и возвращает его в виде строки.
         """
@@ -48,17 +48,20 @@ class AuthService:
 
 
     @staticmethod
-    def create_access_token(username: str) -> str:
+    async def create_access_token(username: str) -> str:
         """
         Генерирует токен доступа
         """
-
         data = {'username': username}
         # Устанавливаем время жизни токена и записываем в data
         expire = datetime.utcnow() + timedelta(minutes=config.token.EXPIRATION_TIME_MINUTES)
         data_to_encode = {**data, **{"exp": expire}}
 
         token = jwt.encode(data_to_encode, config.token.SECRET, algorithm=config.token.ALGORITHM)
+
+        # Сохраняем токен в список активных
+        RedisDAO.add_token(username, token)
+
         return token
 
     @staticmethod
@@ -71,8 +74,8 @@ class AuthService:
         data = _decode_token(token)
         username = data.get("username")
 
-        # Проверяем наличие токена в списке деактивированных
-        if RedisDAO.check_token(username, token):
+        # Проверяем наличие токена в списке активных
+        if not RedisDAO.check_token(username, token):
             raise HTTPException(status_code=401, detail="Токен недействителен")
 
         return username
@@ -89,10 +92,14 @@ class AuthService:
         if username is None:
             raise HTTPException(status_code=401, detail="Неверные данные для аутентификации")
 
-        # Сохраняем в токен список деактивированных
-        RedisDAO.add_token(username, token)
+        # Удаляем токен из списка активных
+        RedisDAO.delete_token(username, token)
 
         # Возвращаем username
         return username
+
+    @staticmethod
+    async def delete(username):
+        RedisDAO.delete_all_tokens(username)
 
 

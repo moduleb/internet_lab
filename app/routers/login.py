@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 @router.post("/login",
-             summary="Аутентификация пользователя",
+             summary="Вход в систему",
              description=" - Требует username и password существующего пользователя, \n"
                          " - Возвращает токен доступа")
 
@@ -22,10 +22,10 @@ async def login(request: UserLoginDTO,
     current_password = await UserService.get_pass(cursor, request.username)
     if not current_password:
         logging.info(f'Пользователь "{request.username}"не найден')
-        raise HTTPException(404, detail="Неверный логин или пароль")
+        raise HTTPException(401, detail="Неверный логин или пароль")
 
-    if current_password == AuthService.hash_pass(request.password):
-        access_token = AuthService.create_access_token(request.username)
+    if current_password == await AuthService.hash_pass(request.password):
+        access_token = await AuthService.create_access_token(request.username)
         json_data = jsonable_encoder({"access_token": access_token, "token_type": "bearer"})
         return JSONResponse(content=json_data)
     else:

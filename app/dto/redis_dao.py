@@ -19,7 +19,7 @@ class RedisDAO:
         """
         try:
             result = r.rpush(username, token)
-            log.debug(f"Добавление токена в список деактивированных: {result}")
+            log.debug(f"Токен добавлен в список активных, index: {result}")
         except Exception as e:
             log.error(f"{REDIS_ERROR_MSG} {e}")
             raise HTTPException(status_code=500, detail=REDIS_ERROR_MSG)
@@ -38,8 +38,49 @@ class RedisDAO:
             # Redis сохраняет токены в байтах, поэтому преобразуем в байты входящий токен
             result = token.encode("utf-8") in tokens
 
-            log.debug(f"Проверка наличия токена в списке деактивированных: {result}")
+            log.debug(f"Токен в списке активных: {result}")
             return result
+        except Exception as e:
+            log.error(f"{REDIS_ERROR_MSG} {e}")
+            raise HTTPException(status_code=500, detail=REDIS_ERROR_MSG)
+
+
+    @staticmethod
+    def delete_token(username: str, token: str) -> None:
+        """
+        Удаление токена из списка активных токенов пользователя
+        """
+        try:
+            # получаем список токенов
+            tokens = r.lrange(username, 0, -1)
+
+            # получаем индекс токена в списке
+            index = tokens.index(token.encode('UTF-8'))
+
+            # Заменяем значение по индексу с токена на __DELETED__
+            r.lset(username, index, "__DELETED__")
+            # Удаляем все записи со значением __DELETED__
+            result = r.lrem(username, 0, "__DELETED__")
+
+            log.debug(f"Удаление токена из списка активных: {result}")
+
+
+        except ValueError as e:
+            log.debug(f"Токена уже удален: {e}")
+        except Exception as e:
+            log.error(f"{REDIS_ERROR_MSG} {e}")
+            raise HTTPException(status_code=500, detail=REDIS_ERROR_MSG)
+
+
+
+    @staticmethod
+    def delete_all_tokens(username: str) -> None:
+        """
+        Удаление всех токенов пользователя
+        """
+        try:
+            result = r.delete(username)
+            log.debug(f"Удаление списка токенов и Redis: {result}")
         except Exception as e:
             log.error(f"{REDIS_ERROR_MSG} {e}")
             raise HTTPException(status_code=500, detail=REDIS_ERROR_MSG)

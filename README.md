@@ -28,16 +28,18 @@ API Сервис предоставляет возможность регист�
 
 <a id="install"></a>
 ## Установка и запуск
+>Для запуска сервиса требуется установленный [Docker](https://www.docker.com/get-started/)
 
 1. Клонировать репозиторий с GitHub:
 
   ```bash
-  git clone <URL репозитория>
+  git clone https://github.com/moduleb/internet_lab.git
   ```
+>альтернативный вариант - скачать архив проекта со страницы на [GitHub](https://github.com/moduleb/internet_lab)
 2. Перейти в папку с проектом:
 
   ```bash
-  cd <папка с проектом>
+  cd internet_lab
   ```
 3. Собрать Docker образ:
 
@@ -121,7 +123,8 @@ Authorization: <Bearer exampleToken>
 {
   "data": {
     "username": "exampleUser",
-    "email": "example@example.com"
+    "email": "example@example.com",
+    "registration_date": "2023-12-01T10:03:54"
   }
 }
 ```

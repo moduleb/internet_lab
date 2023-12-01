@@ -53,10 +53,6 @@ class UserRegDTO(BaseModel):
         return password
 
 
-
-
-
-
 class UserLoginDTO(BaseModel):
     username: str
     password: str
@@ -70,6 +66,7 @@ class UserLoginDTO(BaseModel):
     @field_validator_password
     def validate_password(cls, password):
         return password
+
 
 class UserUpdateDTO(BaseModel):
     password: str

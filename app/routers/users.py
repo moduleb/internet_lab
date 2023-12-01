@@ -5,6 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
 from app.database import get_cursor
+from app.dto.redis_dao import RedisDAO
 from app.dto.user_dto import UserUpdateDTO
 from app.services.auth_service import AuthService
 from app.services.user_service import UserService
@@ -30,7 +31,7 @@ async def get_one(cursor=Depends(get_cursor),
 async def update(data: UserUpdateDTO,
                  cursor: Cursor = Depends(get_cursor),
                  username=Depends(AuthService.verify_token)) -> Response:
-    data.password = AuthService.hash_pass(data.password)
+    data.password = await AuthService.hash_pass(data.password)
     await UserService.update(cursor, username, data)
     data = await UserService.get_one_by_username(cursor, username)
     json_data = jsonable_encoder({'data': data})
@@ -45,3 +46,5 @@ async def update(data: UserUpdateDTO,
 async def delete(cursor=Depends(get_cursor),
                  username=Depends(AuthService.verify_token)):
     await UserService.delete(cursor, username)
+    await AuthService.delete(username)
+
