@@ -1,15 +1,13 @@
 
 
-from fastapi import APIRouter, Depends, Response, Request
+from fastapi import APIRouter, Depends
 
-from app.container import auth_service
-from app.limiter import limiter
+
+from app.services.auth_service import AuthService
 
 router = APIRouter()
 
-# """LOGOUT"""
-@router.post("/", summary="Logout")
-@limiter.limit("5/minute")
-async def get_all(request: Request,
-                  current_username: str = Depends(auth_service.logout)):
-    return Response(status_code=204)
+# LOGOUT
+@router.post("/logout", status_code=204, summary="Logout")
+async def logout(username: str = Depends(AuthService.logout)):
+    pass

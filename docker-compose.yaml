@@ -2,39 +2,50 @@ version: "3.9"
 
 services:
   app:
-    container_name: gooddelo_app
+    container_name: internet_lab_app
     build:
       context: .
-    image: goodwin954/gooddelo
+    image: goodwin954/internet_lab
     ports:
       - "8000:8000"
     depends_on:
-      pg:
+      mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+     - my_network
   redis:
-    container_name: gooddelo_redis
+    container_name: internet_lab_redis
     image: redis:latest
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-  pg:
-    container_name: gooddelo_pg
-    image: postgres:latest
+    networks:
+      - my_network
+  mysql:
+    container_name: internet_lab_mysql
+    image: mysql:latest
     environment:
-      POSTGRES_USER: gooddelo
-      POSTGRES_PASSWORD: gooddelo
-      POSTGRES_DB: gooddelo
-      PGPORT: 5432
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: internet_lab
+      MYSQL_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root_password
     ports:
-      - "5435:5432"
+     - "3306:3306"
     volumes:
-      - ./pg_data:/var/lib/postgresql/data
+     - ./mysql_data:/var/lib/mysql
+     - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U gooddelo" ]
+      test: [ "CMD-SHELL", "mysqladmin ping -h mysql -u user -p$MYSQL_PASSWORD" ]
       interval: 5s
-      timeout: 5s
-      retries: 5
+      timeout: 15s
+      retries: 20
+    networks:
+     - my_network
+networks:
+  my_network:
+    driver: bridge

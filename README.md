@@ -1,172 +1,217 @@
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
 
-# Приложение Gooddelo
+![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+# UserManagementAPI
+>API сервис для управления пользователями
 
-Основные функции приложения:
-- Выдача токена доступа при регистрации или авторизации.
-- Возможность выхода из системы.
-- Создание задач с полями "Имя" и "Прайс".
-- Возврат данных о созданных задачах при предъявлении токена.
-
-Технологии и инструменты, используемые в приложении:
-- Использование Pydantic для верификации данных.
-- Хранение NoSQL данных в Redis.
-- Ограничение количества запросов с помощью Slowapi.
-- Сохранение информации в базе данных Postgres.
-- Использование SQLAlchemy для доступа к базе данных.
-- Разворачивание приложения с помощью Docker Compose.
-- Использование Docker Volume для хранение данных Postgres. Доступ к базе открыт для других приложений.
-
------------------------------------------------------
-## Запуск приложения
-
-### На локальной машине:
-
-1. Клонировать проект с Github
-2. Перейти в папку проекта
-3. Запустить приложение Docker
-4. Создать образ:
-<br>`docker compose build`
-5. Запустить контейнер:
-<br>`docker compose up -d`
-6. Остановить контейнер:
-<br>`docker compose stop`
-
-### На удаленном сервере:
-1. Создаем папку для приложения:
-<br>`mkdir gooddelo`
-2. Переходим в эту папку:
-<br>`cd gooddelo`
-3. Скачиваем файл <b> 'docker-compose.yml'</b>: 
-<br>`wget -O docker-compose.yaml https://raw.githubusercontent.com/ModuleB/gooddelo/master/docker-compose.yaml`
-4. Скачиваем файл <b> 'Dockerfile'</b>: 
-<br>`wget -O Dockerfile https://raw.githubusercontent.com/ModuleB/gooddelo/master/Dockerfile`
-5. Скачиваем docker образы:
-<br>`docker compose pull`
-6. Запустить контейнер:
-<br>`docker compose up -d`
-7. Останить контейнер:
-<br>`docker compose stop`
+## Содержание
++ [Описание](#description)
++ [Установка и запуск](#install)
++ [API Endpoints:](#api_endpoints)
+  + [Register](#register)
+  + [Login](#login)
+  + [Logout](#logout)
+  + [Get info](#get_info)
+  + [Update](#update)
+  + [Delete](#delete)
++ [Errors](#errors)
++ [Contacts](#contacts)
 
 
------------------------------------------------------
-## Эндпоинты:
+<a id="description"></a>
+## Описание
 
-Приложение доступно по адресу:
-- на локальной машине http://0.0.0.0/:8000
-- на удаленном сервере http://<IP адрес сервера>:8000
+API Сервис предоставляет возможность регистрации, обновления, удаления и получения информации о пользователях.
 
-<br> Информация об эндпоинтах также доступна в Swagger по адресу <b>/docs</b>
+Сервис написан на языке `Python` с использование библиотеки `FastAPI`. Аутентификация происходит с помощью `JWT токена`. Деактивированные токены сохраняются в `Redis`. Данные пользователей хранятся в базе данных `MySQL`. API сервис и базы данных запускаются в `Docker` контейнерах с использованием `Docker Compose`.
 
-### 
-### **[post]** .../register 
 
-Принимает JSON с данными нового пользователя:
-```
+<a id="install"></a>
+## Установка и запуск
+
+1. Клонировать репозиторий с GitHub:
+
+  ```bash
+  git clone <URL репозитория>
+  ```
+2. Перейти в папку с проектом:
+
+  ```bash
+  cd <папка с проектом>
+  ```
+3. Собрать Docker образ:
+
+  ```bash
+  docker compose build
+  ```
+4. Запустить Docker образ:
+
+  ```bash
+  docker compose up -d
+  ```
+
+5. Для остановки контейнера используйте команду:
+
+  ```bash
+  docker compose down
+  ```
+  
+<a id="api_endpoints"></a>
+# API Endpoints
+
+ - Address: [0.0.0.0:8000](http://0.0.0.0:8000/users)
+ - Документация Swagger [http://0.0.0.0:8000/docs](http://0.0.0.0:8000/docs)
+
+<a id="register"></a>
+## Register
+>Регистрация пользователя
+
+#### Request
+
+`POST /users/register`
+
+```json
 {
-  "username": "string",
-  "password": “String1”
+ "username": "exampleUser",
+ "password": "examplePassword",
+ "email": "example@example.com"
 }
 ```
 
-Возвращает токен доступа или ошибку если пользователь уже существует или данные не прошли валидацию:
-```
+#### Response
+
+`200 Successful`
+
+```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0cmlmbmciLCJleHAiOjE2ODU2OTAxNzd9.bn_523efN3TdqgU1gAZzVn-RHkEMxGL3NpcHH0YTHM4",
-  "token_type": "bearer"
+ "data": {
+   "username": "exampleUser",
+   "email": "example@example.com"
+ },
+ "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2",
+ "token_type": "bearer"
 }
 ```
-###
-### **[post]** .../login
 
-Принимает JSON с данными уже зарегистрированного пользователя:
-```
+<a id="update"></a>
+## Update
+>Обновление информации о пользователе
+
+#### Request
+**`PUT /users`**
+
+```json
 {
-  "username": "string",
-  "password": “String1”
+ "password": "examplePassword",
+ "email": "example@example.com"
 }
 ```
-Возвращает токен доступа или ошибку если пользователя с такими данными не существует.
 
-###
-### **[post]** .../logout
+Требуется наличие токена в заголовке авторизации.
 
-Ожидает токен доступа в заголовке ‘Authorization’
-<br>Помечает токен недействительным, дальнейшая авторизация с ним невозможна.
+```
+Authorization: <Bearer exampleToken>
+```
 
+#### Response
+
+`200 Successful`
+
+```json
+{
+  "data": {
+    "username": "exampleUser",
+    "email": "example@example.com"
+  }
+}
+```
+
+<a id="login"></a>
+## Login
+>Аутентификация пользователя
+
+#### Request
+
+**`POST /users/login`**
+
+```json
+{
+ "username": "exampleUser",
+ "password": "examplePassword"
+}
+```
+
+#### Response
+
+`200 Successful`
+
+```json
+{
+   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2",
+   "token_type": "bearer"
+ }
+```
+<a id="logout"></a>
+## Logout
+>Выход из системы
+
+#### Request
+
+`POST /users/logout`
+
+#### Response
+
+`204 No Content`
+
+## Delete
+>Удаление пользователя
+
+#### Request
+
+`DELETE /users`
+
+#### Response
+
+`204 No Content`
+
+<a id="get_info"></a>
+## Get info
+>Получение информации о пользователе
+
+#### Request
+
+`GET /users`
+
+#### Response
+
+`200 Successful`
+
+```json
+{
+ "username": "exampleUser",
+ "email": "example@example.com",
+ "registration_date": "2023-12-01T07:34:21"
+}
+```
+<a id="errors"></a>
+## Errors
+
+- **401 Unauthorized** - отсутствует или невалидный токен авторизации
+- **404 Not Found** - пользователь не найден
+- **409 Conflict** - пользователь уже существует
+- **422 Unprocessable Entity** - поле содержит недопустимые символы
+- **500 Internal Server Error** - внутренняя ошибка сервера
 
 ---
+<a id="contacts"></a>
+## Автор
 
-## /tasks
+**Яшин Роман Игоревич**
 
-Во всех методах требуется токен доступа в заголовке ‘Authorization’
-```
-Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0cmlmbmciLCJleHAiOjE2ODU2OTAxNzd9.bn_523efN3TdqgU1gAZzVn-RHkEMxGL3NpcHH0YTHM4
-```
+Контакты: | .
+----------:| -----------
+GitHub: | [github.com/moduleb](https://github.com/moduleb)
+email: | t3841@yandex.ru
+phone: | +79024127523
+tg: | @popcorn138
 
-###
-### **[get]** .../tasks
-Возвращает JSON с информацией обо всех задачах.
-```
-[
-    {
-        "id": 1,
-        "name": "taskname",
-        "price": 100.0,
-        "creation_date": "2023-06-04T06:59:55.105448"
-    },
-    {
-        "id": 2,
-        "name": "taskname1",
-        "price": 100.0,
-        "creation_date": "2023-06-04T06:59:55.105448"
-    }
-]
-```
-
-###
-### **[get]** .../tasks/{task_id}
-Возвращает JSON с информацией о задаче с полученным id.
-```
-{
-    "id": 1,
-    "name": "taskname",
-    "price": 100.0,
-    "creation_date": "2023-06-04T06:59:55.105448"
-}
-```
-
-###
-### **[post]** .../tasks/{task_id}
-Создает новую задачу. Ожидает JSON с данными:
-```
-{
-  "name": "taskname",
-  "price": “100”
-}
-```
-
-###
-### [put] .../tasks/{task_id}
-Обновляет информацию о задаче с полученным id.
-<br>Ожидает JSON с данными:
-```
-{
-  "name": "taskname",
-  "price": “100”
-}
-```
-
-###
-### **[delete]** .../tasks/{task_id}
-Удаляет задачу с полученным id.
-
----
-
-## База данных доступна вне приложения. Параметры подключения:
-- user: <b>gooddelo</b>
-- password: <b>gooddelo</b>
-- name: <b>gooddelo</b>
-- port: <b>5435</b>
-- host:
-  * на локальной машине: <b>127.0.0.1</b>
-  * на удаленном сервере: <b>< IP адрес сервера ></b>

@@ -1,27 +1,98 @@
 import base64
 import hashlib
-from fastapi import HTTPException
+from datetime import datetime, timedelta
 
+import jwt
+from fastapi import HTTPException, Security
+from fastapi.security import APIKeyHeader
 
-from app.config.config import config
+from app.config import config
+from app.dto.redis_dao import RedisDAO
 from app.logger import log
 
+api_key_header = APIKeyHeader(name='Authorization')
 
-def hash_pass(password: str) -> bytes:
+
+def _decode_token(token: str) -> dict:
+    try:
+        data = jwt.decode(token, config.token.SECRET, algorithms=[config.token.ALGORITHM])
+        return data
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Срок действия токена истек")
+    except jwt.InvalidSignatureError:
+        raise HTTPException(status_code=401, detail="Недействительная подпись токена")
+    except jwt.DecodeError:
+        log.error(f'Ошибка декодирования токена:')
+        raise HTTPException(status_code=401, detail="Ошибка декодирования токена")
+
+class AuthService:
+
+    @staticmethod
+    def hash_pass(password: str) -> str:
         """
-        Хеширует пароль с помощью и возвращает его в виде строки байтов.
+        Хеширует пароль и возвращает его в виде строки.
         """
         try:
-                hash_digest = hashlib.pbkdf2_hmac(
-                        hash_name= config.password.ALGORITHM,
-                        password= password.encode('utf-8'),
-                        salt= config.password.SALT.encode('utf-8'),
-                        iterations= config.password.ITERATIONS
-                )
-                return base64.b64encode(hash_digest).decode('utf-8')
-
+            hash_digest = hashlib.pbkdf2_hmac(
+                hash_name=config.password.ALGORITHM,
+                password=password.encode('utf-8'),
+                salt=config.password.SALT.encode('utf-8'),
+                iterations=config.password.ITERATIONS
+            )
+            hash_pass = base64.b64encode(hash_digest).decode('utf-8')
+            return hash_pass
 
         except Exception as e:
-                log.error(f'Ошибка хеширования пароля: {e}')
-                raise HTTPException(500, detail="Ошибка хеширования пароля")
+            log.error(f'Ошибка хеширования пароля: {e}')
+            raise HTTPException(500, detail="Ошибка хеширования пароля")
+
+
+    @staticmethod
+    def create_access_token(username: str) -> str:
+        """
+        Генерирует токен доступа
+        """
+
+        data = {'username': username}
+        # Устанавливаем время жизни токена и записываем в data
+        expire = datetime.utcnow() + timedelta(minutes=config.token.EXPIRATION_TIME_MINUTES)
+        data_to_encode = {**data, **{"exp": expire}}
+
+        token = jwt.encode(data_to_encode, config.token.SECRET, algorithm=config.token.ALGORITHM)
+        return token
+
+    @staticmethod
+    def verify_token(token: str = Security(api_key_header)) -> str:
+        """
+        Декодирует токен и проверяет его наличие
+        в списке неактивных токенов пользователя в Redis
+        """
+
+        data = _decode_token(token)
+        username = data.get("username")
+
+        # Проверяем наличие токена в списке деактивированных
+        if RedisDAO.check_token(username, token):
+            raise HTTPException(status_code=401, detail="Токен недействителен")
+
+        return username
+
+
+    @staticmethod
+    def logout(token: str = Security(api_key_header)):
+        """
+        Декодирует токен и добавляет его в список неактивных токенов пользователя в Redis
+        """
+        data = _decode_token(token)
+        username = data.get("username")
+
+        if username is None:
+            raise HTTPException(status_code=401, detail="Неверные данные для аутентификации")
+
+        # Сохраняем в токен список деактивированных
+        RedisDAO.add_token(username, token)
+
+        # Возвращаем username
+        return username
+
 

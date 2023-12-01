@@ -1,36 +1,31 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+import logging
 
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
+from starlette.responses import JSONResponse
 
-from app.container import user_service, auth_service
-from app.database import get_session
-from app.dto.user import UserLoginDTO
-from app.limiter import limiter
+from app.database import get_cursor
+from app.dto.user_dto import UserLoginDTO
+from app.services.auth_service import AuthService
+from app.services.user_service import UserService
 
 router = APIRouter()
 
 
-@router.post("/", summary="Авторизация пользователя",
+@router.post("/login", summary="Авторизация пользователя",
              description=" - Принимает username и password существующего пользователя, \n"
-                         " - Возвращает токен доступа на 30 минут")
-@limiter.limit("5/minute")
-async def login(request: Request,
-                data: UserLoginDTO,
-                session: Session = Depends(get_session)):
+                         " - Возвращает токен доступа")
 
-    # Получаем объект пользователя из базы данных
-    user = user_service.get_user(data.username, session)
-    if not user:
-        raise HTTPException(404, detail="Пользователь не найден")
+async def login(request: UserLoginDTO,
+                cursor = Depends(get_cursor)):
+    current_password = await UserService.get_pass(cursor, request.username)
+    if not current_password:
+        logging.info(f'Пользователь "{request.username}"не найден')
+        raise HTTPException(404, detail="Неверный логин или пароль")
 
-    # Хешируем полученный из запроса пароль
-    password2 = user_service.hash_password(data.password)
-
-    # Сравниваем пароль из базы данных с хешированным паролем из запроса
-    # Если все ОК, генерируем и возвращаем токен
-    if user.password == password2:
-        access_token = auth_service.create_access_token(user.username)
-
-        return {"access_token": access_token, "token_type": "bearer"}
+    if current_password == AuthService.hash_pass(request.password):
+        access_token = AuthService.create_access_token(request.username)
+        json_data = jsonable_encoder({"access_token": access_token, "token_type": "bearer"})
+        return JSONResponse(content=json_data)
     else:
         raise HTTPException(401, detail="Неверный логин или пароль")

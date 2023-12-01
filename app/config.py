@@ -4,14 +4,21 @@ from dataclasses import dataclass, field
 
 from dotenv import load_dotenv
 
-from app.logger import log
 
+# загружаем файл .env в переменные окружения
 load_dotenv()
+
+
+@dataclass
+class LoggerConfig:
+    LOG_LEVEL: str = 'DEBUG'
+
 
 @dataclass
 class RedisConfig:
     HOST: str = 'localhost'
     PORT: int = 6379
+
 
 @dataclass
 class DatabaseConfig:
@@ -21,11 +28,11 @@ class DatabaseConfig:
     DB_NAME: str = "test_legprom"
 
 
-
 @dataclass
 class TokenConfig:
     SECRET: str = os.getenv("JWT_SECRET")
     ALGORITHM: str = os.getenv("JWT_ALGORITHM")
+    EXPIRATION_TIME_MINUTES: int = 60
 
 
 @dataclass
@@ -41,20 +48,21 @@ class BaseConfig:
     token: TokenConfig = field(default_factory=TokenConfig)
     db: DatabaseConfig = field(default_factory=DatabaseConfig)
     redis: RedisConfig = field(default_factory=RedisConfig)
+    log: LoggerConfig = field(default_factory=LoggerConfig)
 
 
 @dataclass
 class ProdConfig(BaseConfig):
     db: DatabaseConfig = field(default_factory=lambda: DatabaseConfig(
         HOST="mysql",
-        DB_NAME= "internet_lab"
-    ))
+        DB_NAME="internet_lab"))
     redis: RedisConfig = field(default_factory=lambda: RedisConfig(
         HOST="redis"))
+    log: LoggerConfig = field(default_factory=lambda: LoggerConfig(
+        LOG_LEVEL='ERROR'))
 
 
 if os.environ.get("FASTAPI_ENV") == "production":
     config = ProdConfig()
-    log.info(f'Загружена конфигурация {os.environ.get("FASTAPI_ENV")}')
 else:
     config = BaseConfig()

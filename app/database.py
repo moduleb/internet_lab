@@ -1,38 +1,27 @@
-from psycopg2 import OperationalError
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+import mysql
+from mysql.connector import OperationalError
 
 from app.config import config
-from app.logger import logger
-
-# Формируем URI для подключения к базе данных
-sqlalchemy_database_uri: str = f'postgresql://' \
-                               f'{config.database.user}:' \
-                               f'{config.database.password}@' \
-                               f'{config.database.host}:' \
-                               f'{config.database.port}/' \
-                               f'{config.database.name}'
-
-# Создаем объект engine для подключения к базе данных
-engine = create_engine(sqlalchemy_database_uri, pool_pre_ping=True)
-
-# Создаем класс SessionClass для создания сессий
-SessionClass = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Создаем базовый класс для ORM-моделей
-Base = declarative_base()
+from app.logger import log
 
 
-def get_session():
-    # Создаем объект сессии
-    session = SessionClass()
+try:
+    db = mysql.connector.connect(
+        host=config.db.HOST,
+        user=config.db.USER_NAME,
+        password=config.db.PASSWORD,
+        database=config.db.DB_NAME,
+    )
+except Exception as e:
+    log.error(f'DB connection error {e}')
+
+
+def get_cursor():
     try:
-        # Используем ключевое слово yield, чтобы вернуть сессию в качестве генератора
-        yield session
+        cursor = db.cursor()
+        yield cursor
     except OperationalError as e:
-        pass
-        logger.error(f"[database.py] Ошибка подключения к базе данных: {e}")
+        log.error(f"Ошибка подключения к базе данных: {e}")
     finally:
-        # Закрываем сессию
-        session.close()
+        db.commit()
+        cursor.close()
