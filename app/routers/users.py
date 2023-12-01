@@ -5,7 +5,6 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
 from app.database import get_cursor
-from app.dto.redis_dao import RedisDAO
 from app.dto.user_dto import UserUpdateDTO
 from app.services.auth_service import AuthService
 from app.services.user_service import UserService
