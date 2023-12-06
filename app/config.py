@@ -49,6 +49,7 @@ class BaseConfig:
     db: DatabaseConfig = field(default_factory=DatabaseConfig)
     redis: RedisConfig = field(default_factory=RedisConfig)
     log: LoggerConfig = field(default_factory=LoggerConfig)
+    config_type: str = 'dev'
 
 
 @dataclass
@@ -59,7 +60,8 @@ class ProdConfig(BaseConfig):
     redis: RedisConfig = field(default_factory=lambda: RedisConfig(
         HOST="redis"))
     log: LoggerConfig = field(default_factory=lambda: LoggerConfig(
-        LOG_LEVEL='ERROR'))
+        LOG_LEVEL='DEBUG'))
+    config_type: str = 'prod'
 
 
 if os.environ.get("FASTAPI_ENV") == "production":

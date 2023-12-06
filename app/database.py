@@ -1,4 +1,5 @@
 import mysql
+from fastapi import HTTPException
 from mysql.connector import OperationalError
 
 from app.config import config
@@ -18,10 +19,20 @@ except Exception as e:
 
 def get_cursor():
     try:
+        status = db.is_connected()
+        log.debug(f'MySQL is connected: {status}')
+        if not status:
+            db.reconnect()
+            log.debug(f'MySQL reconnected...\n'
+                      f'MySQL is connected: {db.is_connected()}')
         cursor = db.cursor()
         yield cursor
-    except OperationalError as e:
-        log.error(f"Ошибка подключения к базе данных: {e}")
+    # except OperationalError as e:
+    #     log.error(f"Ошибка подключения к базе данных: {e}")
+    #     raise HTTPException(status_code=500, detail="Ошибка базы данных")
+    # except Exception as e:
+    #     log.error(f"Ошибка подключения к базе данных: {e}")
+    #     raise HTTPException(status_code=500, detail="Ошибка базы данных")
     finally:
         db.commit()
         cursor.close()

@@ -1,5 +1,7 @@
 import base64
+
 import hashlib
+import random
 from datetime import datetime, timedelta
 
 import jwt
@@ -17,12 +19,13 @@ def _decode_token(token: str) -> dict:
     try:
         data = jwt.decode(token, config.token.SECRET, algorithms=[config.token.ALGORITHM])
         return data
+
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Срок действия токена истек")
     except jwt.InvalidSignatureError:
         raise HTTPException(status_code=401, detail="Недействительная подпись токена")
     except jwt.DecodeError:
-        log.error(f'Ошибка декодирования токена:')
+        log.debug(f'Ошибка декодирования токена:')
         raise HTTPException(status_code=401, detail="Ошибка декодирования токена")
 
 class AuthService:
@@ -52,12 +55,16 @@ class AuthService:
         """
         Генерирует токен доступа
         """
-        data = {'username': username}
-        # Устанавливаем время жизни токена и записываем в data
-        expire = datetime.utcnow() + timedelta(minutes=config.token.EXPIRATION_TIME_MINUTES)
-        data_to_encode = {**data, **{"exp": expire}}
 
-        token = jwt.encode(data_to_encode, config.token.SECRET, algorithm=config.token.ALGORITHM)
+        # Устанавливаем время жизни токена и записываем в data
+        minutes = config.token.EXPIRATION_TIME_MINUTES
+        expire_time= datetime.utcnow() + timedelta(minutes=minutes)
+
+
+        payload = {'username': username,
+                   'exp': expire_time,
+                   'random_number': random.randint(10000, 99999)}
+        token = jwt.encode(payload, config.token.SECRET, algorithm=config.token.ALGORITHM)
 
         # Сохраняем токен в список активных
         RedisDAO.add_token(username, token)

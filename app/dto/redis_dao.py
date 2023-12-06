@@ -80,7 +80,24 @@ class RedisDAO:
         """
         try:
             result = r.delete(username)
-            log.debug(f"Удаление списка токенов и Redis: {result}")
+            log.debug(f"Удаление списка токенов в Redis: {result}")
+        except Exception as e:
+            log.error(f"{REDIS_ERROR_MSG} {e}")
+            raise HTTPException(status_code=500, detail=REDIS_ERROR_MSG)
+
+    @staticmethod
+    def get_amount_of_tokens(username: str) -> int:
+
+        """
+        Узнаем количество активных токенов пользователя
+        """
+        try:
+            # получаем список токенов
+            tokens = r.lrange(username, 0, -1)
+            amount_of_tokens = len(tokens)
+            log.debug(f"Количество активных токенов {username}: {amount_of_tokens}")
+            return amount_of_tokens
+
         except Exception as e:
             log.error(f"{REDIS_ERROR_MSG} {e}")
             raise HTTPException(status_code=500, detail=REDIS_ERROR_MSG)

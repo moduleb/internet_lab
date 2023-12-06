@@ -204,7 +204,9 @@ Authorization: <Bearer exampleToken>
 ## Errors
 
 - **401 Unauthorized** - отсутствует или невалидный токен авторизации
+- **403 Forbidden** - доступ к ресурсу запрещен 
 - **404 Not Found** - пользователь не найден
+- **405 Method Not Allowed**
 - **409 Conflict** - пользователь уже существует
 - **422 Unprocessable Entity** - поле содержит недопустимые символы
 - **500 Internal Server Error** - внутренняя ошибка сервера
