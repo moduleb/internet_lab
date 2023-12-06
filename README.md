@@ -111,7 +111,7 @@ docker compose up -d --build ; docker compose logs tests --follow
 Требуется наличие токена в заголовке авторизации.
 
 ```
-Authorization: <Bearer exampleToken>
+Authorization: <exampleToken>
 ```
 
 #### Response
