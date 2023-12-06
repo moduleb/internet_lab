@@ -161,6 +161,12 @@ Authorization: <exampleToken>
 
 `POST /users/logout`
 
+Требуется наличие токена в заголовке авторизации.
+
+```
+Authorization: <exampleToken>
+```
+
 #### Response
 
 `204 No Content`
@@ -171,6 +177,12 @@ Authorization: <exampleToken>
 #### Request
 
 `DELETE /users`
+
+Требуется наличие токена в заголовке авторизации.
+
+```
+Authorization: <exampleToken>
+```
 
 #### Response
 
@@ -183,6 +195,12 @@ Authorization: <exampleToken>
 #### Request
 
 `GET /users`
+
+Требуется наличие токена в заголовке авторизации.
+
+```
+Authorization: <exampleToken>
+```
 
 #### Response
 
